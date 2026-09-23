@@ -2,11 +2,11 @@
 
 StudyFlow adalah web app academic task manager untuk mahasiswa. Aplikasi ini membantu mengelola mata kuliah, tugas, deadline, jadwal kuliah, progress, checklist, notes, dan rekomendasi belajar berbasis AI.
 
-Project ini dibuat sebagai portfolio full-stack modern dengan Next.js App Router, Supabase, dan Google Gemini API. Aplikasi dapat dijalankan lokal dan dideploy ke Vercel.
+Project ini dibuat sebagai Tugas untuk mata Kuliah RPL Semester 7 dengan menggunakan Next.js App Router, Supabase, dan Google Gemini API. Aplikasi dapat dijalankan lokal dan dideploy ke Vercel.
 
 ## Catatan MVP
 
-StudyFlow adalah web app only. MVP ini tidak mencakup native mobile app, React Native, Expo, PWA, push notification browser/mobile, OCR, import Google Calendar, atau import jadwal otomatis. Notifikasi yang tersedia pada MVP dikirim melalui Telegram Bot.
+StudyFlow adalah web app only. MVP ini tidak mencakup native mobile app, React Native, Expo, PWA, push notification browser/mobile, OCR, import Google Calendar, atau import jadwal otomatis.
 
 ## Fitur Utama
 
@@ -17,7 +17,7 @@ StudyFlow adalah web app only. MVP ini tidak mencakup native mobile app, React N
 - Jadwal Hari Ini di dashboard berdasarkan jadwal kuliah milik user yang sedang login.
 - CRUD mata kuliah.
 - CRUD jadwal kuliah manual.
-- Telegram reminder opt-in untuk deadline, overdue task, dan jadwal kuliah harian melalui Telegram Bot.
+- WhatsApp reminder opt-in untuk deadline, overdue task, dan jadwal kuliah harian.
 - CRUD tugas akademik.
 - Filter tugas: all, today, this week, overdue, completed.
 - Search tugas berdasarkan judul.
@@ -94,7 +94,7 @@ lib/
   supabase-admin.ts
   supabase.ts
   utils.ts
-  telegram.ts
+  whatsapp.ts
 
 database/
   schema.sql
@@ -125,7 +125,7 @@ Rekomendasi screenshot:
 Contoh penulisan:
 
 ```md
-![Dashboard StudyFlow](docs/screenshots/dashboard.png)
+![Dashboard StudyFlow AI](docs/screenshots/dashboard.png)
 ```
 
 ## Cara Install
@@ -155,7 +155,11 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GEMINI_API_KEY=your_gemini_api_key
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+WHATSAPP_ACCESS_TOKEN=your_meta_whatsapp_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_meta_whatsapp_phone_number_id
+WHATSAPP_GRAPH_API_VERSION=v23.0
+WHATSAPP_TEMPLATE_NAME=your_approved_whatsapp_template_name
+WHATSAPP_TEMPLATE_LANGUAGE=id
 CRON_SECRET=your_random_cron_secret_at_least_16_chars
 ```
 
@@ -199,9 +203,9 @@ Schema akan membuat tabel:
 - `task_materials`
 - `material_quiz_attempts`
 - `user_notification_settings`
-- `notification_logs`
+- `whatsapp_reminder_logs`
 
-Schema juga membuat bucket Supabase Storage `task-materials` untuk file materi dan mengaktifkan Row Level Security agar user hanya bisa mengakses data miliknya sendiri. Pengaturan notifikasi menyimpan koneksi Telegram dan preferensi reminder user.
+Schema juga membuat bucket Supabase Storage `task-materials` untuk file materi dan mengaktifkan Row Level Security agar user hanya bisa mengakses data miliknya sendiri.
 
 ## Upload Materi dan Quiz AI
 
@@ -220,9 +224,9 @@ app/api/ai/material-quiz/route.ts
 
 Quiz menampilkan pertanyaan pilihan ganda. Setelah user submit, aplikasi menghitung skor dan menampilkan daftar jawaban benar.
 
-## Telegram Push Notification
+## WhatsApp Reminder
 
-Notifikasi Telegram bersifat opt-in. User dapat menghubungkan akun Telegram melalui halaman `Settings` dan mengaktifkan atau mematikan reminder. Setelah akun terhubung, StudyFlow dapat mengirim push notification ke Telegram user melalui Telegram Bot.
+Reminder WhatsApp bersifat opt-in. User bisa membuka halaman `Settings`, mengisi nomor WhatsApp, lalu mengaktifkan atau mematikan reminder. Jika toggle mati, cron tidak akan mengirim reminder ke nomor tersebut.
 
 Pengiriman otomatis memakai route server-side:
 
@@ -230,91 +234,32 @@ Pengiriman otomatis memakai route server-side:
 app/api/cron/reminders/route.ts
 ```
 
-Route ini membaca `user_notification_settings`, membuat log di `notification_logs`, lalu mengirim pesan ke Telegram melalui Telegram Bot API hanya dari backend. `TELEGRAM_BOT_TOKEN` dan Supabase service role tidak boleh dipakai di frontend.
-
-## Telegram Push Notification
-
-StudyFlow menyediakan sistem reminder yang dapat mengirim push notification ke Telegram melalui Telegram Bot. Fitur ini digunakan untuk membantu user menerima pengingat deadline, tugas yang overdue, dan jadwal kuliah tanpa harus membuka StudyFlow secara terus-menerus.
-
-Alur notifikasi:
-
-```txt
-User menghubungkan Telegram
-        ↓
-StudyFlow menyimpan Telegram chat ID
-        ↓
-Vercel Cron menjalankan reminder checker
-        ↓
-StudyFlow mengecek deadline dan jadwal
-        ↓
-Telegram Bot API
-        ↓
-Push notification diterima di Telegram
-```
-
-Telegram Bot dibuat melalui `@BotFather`. Token bot disimpan pada environment variable `TELEGRAM_BOT_TOKEN` dan hanya digunakan di server-side.
-
-Reminder Telegram bersifat opt-in. User dapat mengaktifkan atau menonaktifkan jenis reminder dari halaman `Settings`.
-
-Jenis reminder yang didukung:
-
-- Deadline besok.
-- Deadline hari ini.
-- Tugas overdue.
-- Jadwal kuliah hari ini.
-
-Endpoint reminder berada di:
-
-```txt
-app/api/cron/reminders/route.ts
-```
-
-Helper pengiriman Telegram berada di:
-
-```txt
-lib/telegram.ts
-```
-
-Sistem reminder mencatat status pengiriman pada `notification_logs` agar reminder yang sama tidak dikirim berulang kali.
-
-### Setup Telegram Bot
-
-1. Buka Telegram dan cari `@BotFather`.
-2. Jalankan `/newbot`.
-3. Buat nama dan username bot.
-4. Salin token bot yang diberikan BotFather.
-5. Masukkan token ke `.env.local`:
-
-```env
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-```
-
-6. Untuk production, masukkan `TELEGRAM_BOT_TOKEN` ke Environment Variables Vercel.
-7. Hubungkan akun Telegram dari halaman `Settings` di StudyFlow.
-8. Uji pengiriman reminder setelah koneksi Telegram berhasil.
-
-Telegram Bot API digunakan untuk mengirim pesan dari server StudyFlow ke chat Telegram user.
+Route ini membaca `user_notification_settings`, membuat log di `whatsapp_reminder_logs`, lalu mengirim pesan lewat WhatsApp Cloud API hanya dari backend. Secret WhatsApp dan Supabase service role tidak boleh dipakai di frontend.
 
 ## Cara Deploy ke Vercel
 
 1. Push project ke GitHub.
 2. Login ke Vercel.
 3. Klik Add New Project.
-4. Import repository StudyFlow.
+4. Import repository StudyFlow AI.
 5. Pastikan framework terdeteksi sebagai Next.js.
 6. Tambahkan environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `GEMINI_API_KEY`
-   - `TELEGRAM_BOT_TOKEN`
+   - `WHATSAPP_ACCESS_TOKEN`
+   - `WHATSAPP_PHONE_NUMBER_ID`
+   - `WHATSAPP_GRAPH_API_VERSION`
+   - `WHATSAPP_TEMPLATE_NAME`
+   - `WHATSAPP_TEMPLATE_LANGUAGE`
    - `CRON_SECRET`
 7. Klik Deploy.
 8. Setelah deploy selesai, test register, login, dashboard, CRUD, dan fitur AI.
 
 Jika environment variable di Vercel diubah setelah deploy, lakukan redeploy agar nilai baru dipakai.
 
-Cron Telegram reminder didefinisikan di `vercel.json` dan berjalan setiap hari pukul `00:00 UTC`, setara sekitar `07:00 WIB`. Jika ingin jadwal lebih sering, sesuaikan `schedule` dan pastikan plan Vercel mendukung frekuensi tersebut.
+Cron WhatsApp reminder didefinisikan di `vercel.json` dan berjalan setiap hari pukul `00:00 UTC`, setara sekitar `07:00 WIB`. Jika ingin jadwal lebih sering, sesuaikan `schedule` dan pastikan plan Vercel mendukung frekuensi tersebut.
 
 ## Future Improvements
 
@@ -335,9 +280,9 @@ Fitur berikut hanya rencana lanjutan, bukan bagian MVP:
 
 - `.env.local` wajib masuk `.gitignore`.
 - `.env.example` hanya berisi placeholder.
-- Jangan hardcode Supabase key, Gemini key, Telegram bot token, atau cron secret.
+- Jangan hardcode Supabase key, Gemini key, WhatsApp token, atau cron secret.
 - `GEMINI_API_KEY` hanya dibaca di server-side API routes.
-- `SUPABASE_SERVICE_ROLE_KEY`, `TELEGRAM_BOT_TOKEN`, dan `CRON_SECRET` hanya boleh dipakai di server-side route.
+- `SUPABASE_SERVICE_ROLE_KEY`, `WHATSAPP_ACCESS_TOKEN`, dan `CRON_SECRET` hanya boleh dipakai di server-side route.
 - Aktifkan RLS di Supabase.
 - Query data user harus dibatasi dengan `user_id` dan `auth.uid()`.
 
@@ -346,6 +291,6 @@ Fitur berikut hanya rencana lanjutan, bukan bagian MVP:
 - Supabase Row Level Security: <https://supabase.com/docs/guides/database/postgres/row-level-security>
 - Vercel Environment Variables: <https://vercel.com/docs/projects/environment-variables>
 - Vercel Cron Jobs: <https://vercel.com/docs/cron-jobs>
-- Telegram Bot API: <https://core.telegram.org/bots/api>
+- WhatsApp Cloud API: <https://developers.facebook.com/docs/whatsapp/cloud-api>
 - Gemini Document Processing: <https://ai.google.dev/gemini-api/docs/document-processing>
 - Gemini API Key: <https://ai.google.dev/gemini-api/docs/api-key>
