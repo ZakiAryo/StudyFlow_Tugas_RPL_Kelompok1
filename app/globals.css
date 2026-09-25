@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 20% 98%;
+  --foreground: 224 26% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 26% 12%;
+  --muted: 214 32% 92%;
+  --muted-foreground: 215 16% 42%;
+  --border: 214 22% 86%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 224 22% 10%;
+  --foreground: 210 20% 96%;
+  --card: 224 20% 14%;
+  --card-foreground: 210 20% 96%;
+  --muted: 224 15% 20%;
+  --muted-foreground: 215 16% 72%;
+  --border: 224 15% 24%;
+  --primary: 178 70% 42%;
+  --primary-foreground: 220 24% 9%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.18);
+}
+
+.focus-ring {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
