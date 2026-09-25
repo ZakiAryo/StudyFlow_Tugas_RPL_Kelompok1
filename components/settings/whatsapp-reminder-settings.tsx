@@ -121,6 +121,7 @@ export function WhatsAppReminderSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -150,7 +151,6 @@ export function WhatsAppReminderSettings() {
 
       setUserId(user.id);
 
-      // Ambil pengaturan reminder
       const { data, error: settingsError } = await supabase
         .from("user_notification_settings")
         .select(
@@ -187,7 +187,6 @@ export function WhatsAppReminderSettings() {
         timezone: settings?.timezone ?? defaultForm.timezone,
       });
 
-      // Ambil status koneksi Telegram
       const { data: connectionData, error: connectionError } =
         await supabase
           .from("telegram_connections")
@@ -243,7 +242,6 @@ export function WhatsAppReminderSettings() {
         throw new Error("Link koneksi Telegram tidak tersedia.");
       }
 
-      // Buka Telegram
       window.open(result.telegramUrl, "_blank", "noopener,noreferrer");
 
       setSuccess(
@@ -257,6 +255,41 @@ export function WhatsAppReminderSettings() {
       );
     } finally {
       setIsConnecting(false);
+    }
+  }
+
+  async function handleDisconnectTelegram() {
+    setIsDisconnecting(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/telegram/disconnect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.error || "Gagal memutuskan koneksi Telegram.",
+        );
+      }
+
+      setSuccess("Telegram berhasil diputuskan.");
+
+      await loadSettings();
+    } catch (disconnectError) {
+      setError(
+        disconnectError instanceof Error
+          ? disconnectError.message
+          : "Gagal memutuskan koneksi Telegram.",
+      );
+    } finally {
+      setIsDisconnecting(false);
     }
   }
 
@@ -285,21 +318,15 @@ export function WhatsAppReminderSettings() {
             user_id: userId,
             telegram_chat_id: connection?.telegram_chat_id ?? null,
             telegram_enabled: form.telegram_enabled,
-
             remind_deadline_tomorrow:
               form.remind_deadline_tomorrow,
-
             remind_deadline_today:
               form.remind_deadline_today,
-
             remind_overdue_tasks:
               form.remind_overdue_tasks,
-
             remind_today_schedule:
               form.remind_today_schedule,
-
             reminder_time: form.reminder_time,
-
             timezone:
               form.timezone.trim() || defaultForm.timezone,
           },
@@ -402,24 +429,45 @@ export function WhatsAppReminderSettings() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => void handleConnectTelegram()}
-            disabled={isConnecting}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isConnecting ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <Link2 className="h-4 w-4" />
-            )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => void handleConnectTelegram()}
+              disabled={isConnecting || isDisconnecting}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isConnecting ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Link2 className="h-4 w-4" />
+              )}
 
-            {isConnecting
-              ? "Membuka Telegram..."
-              : isConnected
-                ? "Hubungkan ulang"
-                : "Connect Telegram"}
-          </button>
+              {isConnecting
+                ? "Membuka Telegram..."
+                : isConnected
+                  ? "Hubungkan ulang"
+                  : "Connect Telegram"}
+            </button>
+
+            {isConnected ? (
+              <button
+                type="button"
+                onClick={() => void handleDisconnectTelegram()}
+                disabled={isDisconnecting || isConnecting}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-rose-300 px-4 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950"
+              >
+                {isDisconnecting ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Unlink className="h-4 w-4" />
+                )}
+
+                {isDisconnecting
+                  ? "Memutuskan..."
+                  : "Putuskan Telegram"}
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -537,7 +585,7 @@ export function WhatsAppReminderSettings() {
         <button
           type="button"
           onClick={() => void handleSave()}
-          disabled={isSaving}
+          disabled={isSaving || isDisconnecting}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? (
@@ -552,7 +600,7 @@ export function WhatsAppReminderSettings() {
         <button
           type="button"
           onClick={() => void loadSettings()}
-          disabled={isSaving || isConnecting}
+          disabled={isSaving || isConnecting || isDisconnecting}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Bell className="h-4 w-4" />
