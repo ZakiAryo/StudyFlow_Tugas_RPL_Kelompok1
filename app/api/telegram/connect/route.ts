@@ -41,7 +41,7 @@ export async function POST() {
       .from("telegram_connections")
       .delete()
       .eq("user_id", user.id)
-      .eq("status", "pending");
+      .in("status", ["pending", "disconnected"]);
 
     if (deleteError) {
       console.error(
