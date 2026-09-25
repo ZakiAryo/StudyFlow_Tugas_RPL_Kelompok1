@@ -205,16 +205,22 @@ function buildScheduleMessage(sessions: ScheduleSessionRecord[]) {
   const lines = sessions.map((session, index) => {
     const courseName = readCourseName(session.courses);
     const room = session.room?.trim() || "Ruang belum diisi";
-    return `${index + 1}. ${courseName}, ${formatTime(session.start_time)}-${formatTime(session.end_time)}, ${room}`;
+
+    return [
+      `${index + 1}. 📚 ${courseName}`,
+      `   🕐 ${formatTime(session.start_time)} - ${formatTime(session.end_time)}`,
+      `   📍 ${room}`,
+    ].join("\n");
   });
 
   return [
-    "StudyFlow Reminder",
+    "🎓 STUDYFLOW",
     "",
-    "Jadwal kuliah hari ini:",
+    "📅 JADWAL KULIAH HARI INI",
+    "",
     ...lines,
     "",
-    "Semoga sesi kuliahnya lancar.",
+    "Semangat kuliahnya! 💪",
   ].join("\n");
 }
 

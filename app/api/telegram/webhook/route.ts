@@ -160,8 +160,8 @@ export async function POST(request: Request) {
       [
         "✅ Telegram berhasil terhubung!",
         "",
-        `👤 Akun: ${telegramFirstName || "Pengguna Telegram"}`,
-        "🔔 Reminder Telegram: Aktif",
+        `👤 Akun:  ${telegramFirstName || "Pengguna Telegram"}`,
+        "🔔 Reminder Telegram:  Aktif",
         "",
         "StudyFlow sekarang dapat mengirimkan reminder tugas dan jadwal kuliah ke Telegram ini.",
       ].join("\n"),
