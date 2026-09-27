@@ -156,6 +156,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GEMINI_API_KEY=your_gemini_api_key
 CRON_SECRET=your_random_cron_secret_at_least_16_chars
+TELEGRAM_BOT_TOKEN=TOKEN_DARI_BOTFATHER
+TELEGRAM_BOT_USERNAME=USERNAME_BOT_KAMU
 ```
 
 Jangan menaruh API key asli di `.env.example`, README, screenshot, atau file source code.
@@ -198,11 +200,11 @@ Schema akan membuat tabel:
 - `task_materials`
 - `material_quiz_attempts`
 - `user_notification_settings`
-- `whatsapp_reminder_logs`
+- `telegram_reminder_logs`
 
 Schema juga membuat bucket Supabase Storage `task-materials` untuk file materi dan mengaktifkan Row Level Security agar user hanya bisa mengakses data miliknya sendiri.
 
-## Upload Materi dan Quiz AI
+## Upload Materi dan Quiz made by AI
 
 Di halaman detail tugas, user bisa upload materi dalam format:
 
@@ -219,9 +221,9 @@ app/api/ai/material-quiz/route.ts
 
 Quiz menampilkan pertanyaan pilihan ganda. Setelah user submit, aplikasi menghitung skor dan menampilkan daftar jawaban benar.
 
-## WhatsApp Reminder
+## Telegram Reminder
 
-Reminder WhatsApp bersifat opt-in. User bisa membuka halaman `Settings`, mengisi nomor WhatsApp, lalu mengaktifkan atau mematikan reminder. Jika toggle mati, cron tidak akan mengirim reminder ke nomor tersebut.
+Reminder Telegram bersifat opt-in. User bisa membuka halaman `Settings`, lalu konek ke akun telegram user, lalu mengaktifkan atau mematikan reminder. Jika toggle mati, cron tidak akan mengirim reminder ke nomor tersebut.
 
 Pengiriman otomatis memakai route server-side:
 
@@ -229,7 +231,7 @@ Pengiriman otomatis memakai route server-side:
 app/api/cron/reminders/route.ts
 ```
 
-Route ini membaca `user_notification_settings`, membuat log di `whatsapp_reminder_logs`, lalu mengirim pesan lewat WhatsApp Cloud API hanya dari backend. Secret WhatsApp dan Supabase service role tidak boleh dipakai di frontend.
+Route ini membaca `user_notification_settings`, membuat log di `telegram_reminder_logs`, lalu mengirim pesan lewat bot Telegram hanya dari backend. Secret Telegram dan Supabase service role tidak boleh dipakai di frontend.
 
 ## Cara Deploy ke Vercel
 
@@ -243,12 +245,9 @@ Route ini membaca `user_notification_settings`, membuat log di `whatsapp_reminde
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `GEMINI_API_KEY`
-   - `WHATSAPP_ACCESS_TOKEN`
-   - `WHATSAPP_PHONE_NUMBER_ID`
-   - `WHATSAPP_GRAPH_API_VERSION`
-   - `WHATSAPP_TEMPLATE_NAME`
-   - `WHATSAPP_TEMPLATE_LANGUAGE`
    - `CRON_SECRET`
+   - `TELEGRAM_BOT_TOKEN`
+   - `TELEGRAM_BOT_USERNAME`
 7. Klik Deploy.
 8. Setelah deploy selesai, test register, login, dashboard, CRUD, dan fitur AI.
 
@@ -289,3 +288,5 @@ Fitur berikut hanya rencana lanjutan, bukan bagian MVP:
 - WhatsApp Cloud API: <https://developers.facebook.com/docs/whatsapp/cloud-api>
 - Gemini Document Processing: <https://ai.google.dev/gemini-api/docs/document-processing>
 - Gemini API Key: <https://ai.google.dev/gemini-api/docs/api-key>
+- TELEGRAM_BOT_TOKEN=TOKEN_DARI_BOTFATHER
+- TELEGRAM_BOT_USERNAME=USERNAME_BOT_KAMU
