@@ -17,7 +17,7 @@ StudyFlow adalah web app only. MVP ini tidak mencakup native mobile app, React N
 - Jadwal Hari Ini di dashboard berdasarkan jadwal kuliah milik user yang sedang login.
 - CRUD mata kuliah.
 - CRUD jadwal kuliah manual.
-- WhatsApp reminder opt-in untuk deadline, overdue task, dan jadwal kuliah harian.
+- Telegram reminder opt-in untuk deadline, overdue task, dan jadwal kuliah harian.
 - CRUD tugas akademik.
 - Filter tugas: all, today, this week, overdue, completed.
 - Search tugas berdasarkan judul.
