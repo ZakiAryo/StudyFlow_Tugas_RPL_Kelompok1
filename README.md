@@ -289,4 +289,5 @@ Fitur berikut hanya rencana lanjutan, bukan bagian MVP:
 - Gemini Document Processing: <https://ai.google.dev/gemini-api/docs/document-processing>
 - Gemini API Key: <https://ai.google.dev/gemini-api/docs/api-key>
 - TELEGRAM_BOT_TOKEN=TOKEN_DARI_BOTFATHER
+- UI/UX: https://www.figma.com/design/Hi4SxT2pLUOR4osObl0dMz/UI-UX-StudyFlow?node-id=4-6&t=x3M9bTrHED9jhIi4-1
 - TELEGRAM_BOT_USERNAME=USERNAME_BOT_KAMU
